@@ -1,7 +1,8 @@
 import dns from 'node:dns';
 import { createInterface } from 'node:readline';
 import pkg from '../../../package.json';
-import { ClaudeAdapter } from '../../agent/claude/adapter';
+import { createAgent } from '../../agent';
+import { getAgentType } from '../../config/schema';
 import { startChannel, type BridgeChannel } from '../../bot/channel';
 import { runRegistrationWizard } from '../../bot/wizard';
 import type { Controls } from '../../commands';
@@ -76,10 +77,14 @@ export async function runStart(opts: StartOptions): Promise<void> {
 
   await preFlightChecks({ skipCheckLarkCli: opts.skipCheckLarkCli });
 
-  const agent = new ClaudeAdapter();
+  const agent = createAgent(getAgentType(cfg));
   if (!(await agent.isAvailable())) {
-    console.error('✗ 未找到 claude CLI。请先安装 Claude Code：');
-    console.error('  https://docs.anthropic.com/en/docs/claude-code/quickstart');
+    const installUrl =
+      getAgentType(cfg) === 'codex'
+        ? 'https://developers.openai.com/codex'
+        : 'https://docs.anthropic.com/en/docs/claude-code/quickstart';
+    console.error(`✗ 未找到 ${agent.displayName} CLI。请先安装 ${agent.displayName}：`);
+    console.error(`  ${installUrl}`);
     process.exit(1);
   }
 

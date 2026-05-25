@@ -90,6 +90,8 @@ export interface AppAccess {
 }
 
 export interface AppPreferences {
+  /** Which AI coding agent backend to use. Default 'claude'. */
+  agentType?: 'claude' | 'codex';
   /** Reply rendering mode for IM (group/p2p) messages. Default 'card'. */
   messageReply?: MessageReplyMode;
   /**
@@ -268,4 +270,11 @@ export function getRunIdleTimeoutMs(cfg: AppConfig): number | undefined {
   if (typeof raw !== 'number' || !Number.isFinite(raw) || raw <= 0) return undefined;
   const clamped = Math.min(Math.max(Math.floor(raw), 1), 120);
   return clamped * 60_000;
+}
+
+/** Resolve the agent type preference with default fallback. */
+export function getAgentType(cfg: AppConfig): 'claude' | 'codex' {
+  const raw = cfg.preferences?.agentType;
+  if (raw === 'codex') return 'codex';
+  return 'claude';
 }
